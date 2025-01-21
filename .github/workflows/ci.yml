@@ -20,7 +20,7 @@ jobs:
         with:
             submodules: recursive
       - name: Install LF toolchain
-        uses: erlingrj/lf-toolchain
+        uses: erlingrj/lf-toolchain@v0.2
         with:
           lfc-version: nightly
           lingo-version: stable
