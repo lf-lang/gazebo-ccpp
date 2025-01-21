@@ -1,5 +1,7 @@
 target CCpp {
-  keepalive: true
+  files: ["../models", "./include/util.hpp"],
+  cmake-include: "./include/gazebo.cmake",
+  keepalive: true,
 }
 
 import GazeboBase from "./lib/GazeboBase.lf";

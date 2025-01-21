@@ -1,7 +1,7 @@
 target CCpp {
-  files: ["models", "include"],
+  files: ["./models", "./include/util.hpp"],
+  cmake-include: "./include/gazebo.cmake",
   keepalive: true,
-  cmake-include: "./include/gazebo.cmake", // FIXME: Create issue for why this is needed here...
 }
 
 import GazeboBase from "./lib/GazeboBase.lf";
@@ -16,7 +16,6 @@ preamble {=
 =}
 
 reactor GazeboCar extends GazeboBase {
-  state velocity_topic : string = "/cmd_vel";
   state velocity_publisher : std::unique_ptr<gz::transport::Node::Publisher>;
   output laser_scan : std::shared_ptr<gz::msgs::LaserScan>;
   physical action a_laser_scan: gz::msgs::LaserScan*;
@@ -59,8 +58,8 @@ reactor GazeboCar extends GazeboBase {
     }
 
     self->velocity_publisher = std::make_unique<gz::transport::Node::Publisher>(
-      self->node->Advertise<gz::msgs::Twist>(self->velocity_topic)
-      );
+      self->node->Advertise<gz::msgs::Twist>("/cmd_vel")
+    );
 
   =}
 
