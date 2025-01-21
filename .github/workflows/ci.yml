@@ -33,7 +33,7 @@ jobs:
           sudo apt-get install libeigen3-dev
       - name: Install LF toolchain
         run: |
-          curl -Ls https://install.lf-lang.org | bash -s cli
+          curl -Ls https://install.lf-lang.org | bash -s cli nightly
           cargo install lingua-franca
       - name: Build examples
         run: |
