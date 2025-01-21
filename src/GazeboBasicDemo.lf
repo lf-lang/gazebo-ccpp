@@ -1,5 +1,5 @@
 target CCpp {
-  files: ["../models", "./include/util.hpp"],
+  files: ["./models", "./include/util.hpp"],
   cmake-include: "./include/gazebo.cmake",
   keepalive: true,
 }
