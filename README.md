@@ -29,8 +29,3 @@ Run the collision avoidance demo where the car will avoid a wall.
 ```sh
 lingo run -a GazeboCollisionAvoidanceDemo
 ```
-
-
-
-
-Run the simp 
