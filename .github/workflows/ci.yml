@@ -20,7 +20,10 @@ jobs:
         with:
             submodules: recursive
       - name: Install LF toolchain
-        uses: erlingrj/lf-toolchain@nightly
+        uses: erlingrj/lf-toolchain
+        with:
+          lfc-version: nightly
+          lingo-version: stable
         
       - name: Install deps
         run: |
