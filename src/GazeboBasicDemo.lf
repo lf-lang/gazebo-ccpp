@@ -1,0 +1,11 @@
+target CCpp {
+  keepalive: true
+}
+
+import GazeboBase from "./lib/GazeboBase.lf";
+
+main reactor {
+  s = new GazeboBase(
+    model = {= LF_SOURCE_GEN_DIRECTORY "/models/simple_robot.sdf" =},
+    gui = true);
+}

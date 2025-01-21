@@ -1,0 +1,129 @@
+target CCpp {
+  files: ["models", "include"],
+  keepalive: true,
+  cmake-include: "./include/gazebo.cmake", // FIXME: Create issue for why this is needed here...
+}
+
+import GazeboBase from "./lib/GazeboBase.lf";
+
+preamble {=
+  #include <gz/msgs/twist.pb.h>
+  #include <gz/msgs/laserscan.pb.h>
+  #include <gz/msgs/contacts.pb.h>
+  #include <Eigen/Dense>
+
+  using Eigen::Vector3d;
+=}
+
+reactor GazeboCar extends GazeboBase {
+  state velocity_topic : string = "/cmd_vel";
+  state velocity_publisher : std::unique_ptr<gz::transport::Node::Publisher>;
+  output laser_scan : std::shared_ptr<gz::msgs::LaserScan>;
+  physical action a_laser_scan: gz::msgs::LaserScan*;
+
+  input velocity: Vector3d
+  input angular_velocity: Vector3d
+
+
+  preamble {=
+    void *_a_laser_scan;
+    void laser_callback(const gz::msgs::LaserScan &msg) {
+      auto msg_copy = new gz::msgs::LaserScan(msg);
+      lf_schedule_value(_a_laser_scan, 0, static_cast<void *>(msg_copy), 1);
+    }
+
+    void contact_callback(const google::protobuf::Message &_msg,
+        const gz::transport::MessageInfo &_info)
+    {
+      lf_print("Wall touched");
+    }
+  
+  =}
+
+
+  reaction(startup) -> a_laser_scan {=
+    _a_laser_scan = (void *) a_laser_scan;
+    std::string scan_topic = "/lidar";
+    
+    lf_set_destructor(a_laser_scan, cpp_delete<gz::msgs::LaserScan>);
+  
+    if (!self->node->Subscribe(scan_topic, laser_callback))
+    {
+      lf_print_error_and_exit("Error subscribing to topic %s", scan_topic.c_str());
+    }
+
+    std::string contact_topic = "/wall/touched";
+    if (!self->node->Subscribe(contact_topic, contact_callback))
+    {
+      lf_print_error_and_exit("Error subscribing to topic %s", contact_topic.c_str());
+    }
+
+    self->velocity_publisher = std::make_unique<gz::transport::Node::Publisher>(
+      self->node->Advertise<gz::msgs::Twist>(self->velocity_topic)
+      );
+
+  =}
+
+  reaction(a_laser_scan) -> laser_scan {=
+    lf_set(laser_scan, std::make_shared<gz::msgs::LaserScan>(*a_laser_scan->value));
+  =}
+
+  reaction(velocity, angular_velocity) {=
+    gz::msgs::Twist twist;
+    if (velocity->is_present) {
+      twist.mutable_linear()->set_x(velocity->value(0));
+      twist.mutable_linear()->set_y(velocity->value(1));
+      twist.mutable_linear()->set_z(velocity->value(2));
+    }
+
+    if(angular_velocity->is_present) {
+      twist.mutable_angular()->set_z(angular_velocity->value(2));
+    }
+
+    self->velocity_publisher->Publish(twist);
+  =}
+}
+
+reactor Controller {
+  output velocity: Vector3d
+  output angular_velocity: Vector3d
+  input laser_scan: std::shared_ptr<gz::msgs::LaserScan>
+
+  reaction(laser_scan) -> velocity, angular_velocity{=
+    Vector3d velocity_ctrl = Vector3d(0, 0, 0);
+    Vector3d angular_velocity_ctrl = Vector3d(0, 0, 0);
+    bool allMore = true;
+    for (int i = 0; i < laser_scan->value->ranges_size(); i++)
+    {
+      if (laser_scan->value->ranges(i) < 1.0) 
+      {
+        allMore = false;
+        break;
+      }
+    }
+    if (allMore) //if all bigger than one
+    {
+      velocity_ctrl(0) = 1;
+    }
+    else
+    {
+      angular_velocity_ctrl(2) = 1;
+    }
+
+    lf_set(velocity, velocity_ctrl);
+    lf_set(angular_velocity, angular_velocity_ctrl);
+  
+  =}
+
+}
+
+main reactor {
+  sim = new GazeboCar(
+    model = {= LF_SOURCE_GEN_DIRECTORY "/models/simple_robot_with_wall.sdf" =},
+    gui = true);
+
+  controller = new Controller();
+  sim.laser_scan -> controller.laser_scan;
+  controller.velocity -> sim.velocity;
+  controller.angular_velocity -> sim.angular_velocity;
+}

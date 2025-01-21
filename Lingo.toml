@@ -1,0 +1,29 @@
+[package]
+name = "gazebo-ccpp"
+version = "0.1.0"
+
+[lib]
+name = "gazebo-ccpp"
+location = "src/lib"
+target = "CCpp"
+platform = "Native"
+
+[lib.properties]
+
+[[app]]
+name = "GazeboBasicDemo"
+main = "src/GazeboBasicDemo.lf"
+target = "CCpp"
+platform = "Native"
+
+[app.properties]
+
+[[app]]
+name = "GazeboCollisionAvoidanceDemo"
+main = "src/GazeboCollisionAvoidanceDemo.lf"
+target = "CCpp"
+platform = "Native"
+
+[app.properties]
+
+[dependencies]

@@ -1,0 +1,41 @@
+target CCpp {
+  files: ["../models", "../include"],
+  cmake-include: "../include/gazebo.cmake"
+}
+
+preamble {=
+  #include <stdlib.h>
+  #include <stdio.h>
+  #include <unistd.h>
+  #include <memory>
+  #include <sys/types.h>
+  #include <signal.h>
+  #include "include/util.hpp"
+  #include <gz/transport/Node.hh>
+=}
+
+reactor GazeboBase(model: string = "", gui: bool = true) {
+
+  state node: std::unique_ptr<gz::transport::Node>
+
+  reaction(startup) {=
+    char cmd[256];
+    char gui_flag[3] = "";
+    if (!self->gui) {
+        snprintf(gui_flag, sizeof(gui_flag), "-s");
+    }
+
+    snprintf(cmd, sizeof(cmd), "gz sim %s -r %s &", self->model, gui_flag);
+    lf_print("Starting Gazebo with command: `%s`", cmd);
+    if (system(cmd) != 0) {
+        lf_print_error_and_exit("Failed to start Gazebo");
+    }
+
+    self->node = std::make_unique<gz::transport::Node>();
+  =}
+
+  reaction(shutdown) {=
+    signal(SIGQUIT, SIG_IGN);
+    kill(0, SIGQUIT);
+  =}
+}
