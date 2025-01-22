@@ -7,3 +7,22 @@ template<typename T>
 void cpp_delete(void * value) {
 		delete static_cast<T*>(value);
 }
+
+
+#include <memory>
+#include <functional>
+
+template <typename MsgType>
+void generic_callback(void* lf_handle, const MsgType& msg) {
+    auto msg_copy = new MsgType(msg);
+		instant_t stamp = SEC(msg.header().stamp().sec()) + NSEC(msg.header().stamp().nsec());
+		interval_t delay = stamp - lf_time_physical();
+		if (delay < 0) {
+			delay = 0;
+		}
+    lf_schedule_value(lf_handle, delay, static_cast<void*>(msg_copy), 1);
+}
+
+extern "C" {
+void lf_gazebo_set_time(instant_t now);
+}

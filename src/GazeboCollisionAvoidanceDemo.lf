@@ -27,8 +27,7 @@ reactor GazeboCar extends GazeboBase {
   preamble {=
     void *_a_laser_scan;
     void laser_callback(const gz::msgs::LaserScan &msg) {
-      auto msg_copy = new gz::msgs::LaserScan(msg);
-      lf_schedule_value(_a_laser_scan, 0, static_cast<void *>(msg_copy), 1);
+      generic_callback(_a_laser_scan, msg);
     }
 
     void contact_callback(const google::protobuf::Message &_msg,
@@ -60,10 +59,12 @@ reactor GazeboCar extends GazeboBase {
     self->velocity_publisher = std::make_unique<gz::transport::Node::Publisher>(
       self->node->Advertise<gz::msgs::Twist>("/cmd_vel")
     );
-
   =}
 
   reaction(a_laser_scan) -> laser_scan {=
+    gz::msgs::Time stamp = a_laser_scan->value->header().stamp();
+    instant_t ts = SEC(stamp.sec()) + NSEC(stamp.nsec());
+    lf_print("Received laser scan with: tag=%ld ts=%ld", lf_time_logical(), ts);
     lf_set(laser_scan, std::make_shared<gz::msgs::LaserScan>(*a_laser_scan->value));
   =}
 

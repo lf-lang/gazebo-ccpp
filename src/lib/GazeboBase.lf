@@ -10,13 +10,27 @@ preamble {=
   #include <signal.h>
   #include "lf_gazebo_util.hpp"
   #include <gz/transport/Node.hh>
+  #include <gz/msgs/clock.pb.h>
 =}
 
-reactor GazeboBase(model: string = "", gui: bool = true) {
+reactor GazeboBase(model: string = "", gui: bool = true, safe_to_process: time = 10 msec) {
 
   state node: std::unique_ptr<gz::transport::Node>
 
+  preamble {=
+    interval_t safe_to_process;
+    void gazebo_clock_callback(const gz::msgs::Clock &msg) {
+      // lf_print("Gazebo time: %ld", SEC(msg.sim().sec()) + NSEC(msg.sim().nsec()));
+      instant_t sim_time = SEC(msg.sim().sec()) + NSEC(msg.sim().nsec());
+      instant_t sim_time_stp = sim_time - safe_to_process;
+      if (sim_time_stp > 0) {
+        lf_gazebo_set_time(sim_time_stp);
+      }
+    }
+  =}
+
   reaction(startup) {=
+    safe_to_process = self->safe_to_process;
     char cmd[256];
     char gui_flag[3] = "";
     if (!self->gui) {
@@ -30,6 +44,10 @@ reactor GazeboBase(model: string = "", gui: bool = true) {
     }
 
     self->node = std::make_unique<gz::transport::Node>();
+
+    if (!self->node->Subscribe("/clock", gazebo_clock_callback)) {
+        lf_print_error_and_exit("Error subscribing to topic /clock");
+    }
   =}
 
   reaction(shutdown) {=
