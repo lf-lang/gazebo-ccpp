@@ -8,5 +8,4 @@ string(REPLACE "\"" "" LF_SOURCE_DIRECTORY_STRIPPED ${LF_SOURCE_DIRECTORY})
 
 target_sources(${LF_MAIN_TARGET} PUBLIC ${LF_SOURCE_DIRECTORY_STRIPPED}/include/lf_gazebo_util.c)
 target_include_directories(${LF_MAIN_TARGET} PUBLIC ${LF_SOURCE_DIRECTORY_STRIPPED}/include)
-target_compile_definitions(${LF_MAIN_TARGET} PUBLIC LF_SIMULATION)
-target_compile_definitions(reactor-c PUBLIC LF_SIMULATION)
+target_compile_definitions(reactor-c PUBLIC LF_SIMULATE_PHYSICAL_TIME)
