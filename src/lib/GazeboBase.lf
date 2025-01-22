@@ -8,7 +8,7 @@ preamble {=
   #include <memory>
   #include <sys/types.h>
   #include <signal.h>
-  #include "util.hpp"
+  #include "lf_gazebo_util.hpp"
   #include <gz/transport/Node.hh>
 =}
 
