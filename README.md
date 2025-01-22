@@ -2,6 +2,11 @@
 
 ## Requirements
 - Linux (ubuntu 24.04) system. macOS should also work
+- LFC built from branch `simulate-physical-time`:
+
+```sh
+git clone git@github.com:lf-lang/lingua-franca.git -b simulate-physical-time --recursive
+```
 
 ## Getting started
 
@@ -29,3 +34,5 @@ Run the collision avoidance demo where the car will avoid a wall.
 ```sh
 lingo run -a GazeboCollisionAvoidanceDemo
 ```
+
+
