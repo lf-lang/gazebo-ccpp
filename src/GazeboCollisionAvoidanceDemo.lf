@@ -2,6 +2,7 @@ target CCpp {
   files: ["./models"],
   cmake-include: "./include/gazebo.cmake",
   keepalive: true,
+  timeout: 10 sec
 }
 
 import GazeboBase from "./lib/GazeboBase.lf";
@@ -64,7 +65,7 @@ reactor GazeboCar extends GazeboBase {
   reaction(a_laser_scan) -> laser_scan {=
     gz::msgs::Time stamp = a_laser_scan->value->header().stamp();
     instant_t ts = SEC(stamp.sec()) + NSEC(stamp.nsec());
-    lf_print("Received laser scan with: tag=%ld ts=%ld", lf_time_logical(), ts);
+    // lf_print("Received laser scan with: tag=%ld ts=%ld", lf_time_logical(), ts);
     lf_set(laser_scan, std::make_shared<gz::msgs::LaserScan>(*a_laser_scan->value));
   =}
 

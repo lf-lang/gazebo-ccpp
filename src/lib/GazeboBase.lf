@@ -13,16 +13,16 @@ preamble {=
   #include <gz/msgs/clock.pb.h>
 =}
 
-reactor GazeboBase(model: string = "", gui: bool = true, safe_to_process: time = 10 msec) {
+reactor GazeboBase(model: string = "", gui: bool = true, safe_to_advance: time = 10 msec) {
 
   state node: std::unique_ptr<gz::transport::Node>
 
   preamble {=
-    interval_t safe_to_process;
+    interval_t safe_to_advance;
     void gazebo_clock_callback(const gz::msgs::Clock &msg) {
       // lf_print("Gazebo time: %ld", SEC(msg.sim().sec()) + NSEC(msg.sim().nsec()));
       instant_t sim_time = SEC(msg.sim().sec()) + NSEC(msg.sim().nsec());
-      instant_t sim_time_stp = sim_time - safe_to_process;
+      instant_t sim_time_stp = sim_time - safe_to_advance;
       if (sim_time_stp > 0) {
         lf_gazebo_set_time(sim_time_stp);
       }
@@ -30,7 +30,7 @@ reactor GazeboBase(model: string = "", gui: bool = true, safe_to_process: time =
   =}
 
   reaction(startup) {=
-    safe_to_process = self->safe_to_process;
+    safe_to_advance = self->safe_to_advance;
     char cmd[256];
     char gui_flag[3] = "";
     if (!self->gui) {
