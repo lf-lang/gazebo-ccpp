@@ -51,7 +51,7 @@ reactor GazeboBase(model: string = "", gui: bool = true, safe_to_process: time =
   =}
 
   reaction(shutdown) {=
-    signal(SIGQUIT, SIG_IGN);
-    kill(0, SIGQUIT);
+    signal(SIGINT, SIG_IGN);
+    kill(0, SIGINT);
   =}
 }
